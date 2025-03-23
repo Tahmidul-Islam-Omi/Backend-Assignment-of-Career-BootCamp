@@ -23,7 +23,7 @@
  *   version: 1.0.0
  *   contact:
  *     name: API Support
- *     email: support@todoapp.com
+ *     email: tahmidulislamomi09@gmail.com
  * 
  * servers:
  *   - url: http://localhost:3001

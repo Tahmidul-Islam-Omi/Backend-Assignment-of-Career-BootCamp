@@ -8,6 +8,7 @@ const authRoutes = require("./routes/auth");
 const db = require("./config/db"); // Import the database connection
 const swaggerDocs = require("./config/swagger"); // Import Swagger config
 
+// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 

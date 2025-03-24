@@ -1,22 +1,31 @@
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
+const path = require("path");
 
 const app = express();
-const PORT = 3003;
-const SWAGGER_JSON_URL = "http://localhost:3002/api-docs.json";
+const PORT = process.env.PORT || 3003;
 
 async function loadSwaggerDocs() {
     try {
-        const response = await fetch(SWAGGER_JSON_URL);
-        const swaggerDocument = await response.json();
+        // Load the local swagger.json file directly
+        const swaggerDocument = require('./swagger.json');
 
         // Serve Swagger UI
-        app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+        app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+            explorer: true,
+            customSiteTitle: "Todo API Documentation"
+        }));
 
-        app.listen(PORT, () => console.log(`Swagger docs running at http://localhost:${PORT}`));
+        // Only listen when not in Vercel environment
+        if (process.env.VERCEL !== "1") {
+            app.listen(PORT, () => console.log(`Swagger docs running at http://localhost:${PORT}`));
+        }
     } catch (error) {
-        console.error("Error fetching Swagger JSON:", error);
+        console.error("Error setting up Swagger UI:", error);
     }
 }
 
 loadSwaggerDocs();
+
+// Export for Vercel serverless function
+module.exports = app;

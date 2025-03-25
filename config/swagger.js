@@ -51,7 +51,8 @@ function swaggerDocs(app) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
         explorer: true,
         customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: "Todo API Documentation"
+        customSiteTitle: "Todo API Documentation",
+        customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.3.0/swagger-ui.min.css"
     }));
 
     // Docs in JSON format

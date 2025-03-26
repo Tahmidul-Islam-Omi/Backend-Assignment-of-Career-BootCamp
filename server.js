@@ -21,7 +21,7 @@ const options = {
     },
     servers: [
       {
-        url: "YOUR URL",
+        url: "https://backend-assignment-of-career-boot-camp.vercel.app/",
         description: "My API Documentation",
       },
     ],

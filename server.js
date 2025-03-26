@@ -26,7 +26,7 @@ const options = {
       },
     ],
   },
-  apis: ["./routes/auth.js", "./api/routes/todos.js"], // Fixed path to start with ./
+  apis: ["./routes/auth.js", "./api/routes/todos.js"], // Make sure these paths are correct
 };
 const specs = swaggerJsDoc(options);
 //----------------------------------------------------------------------
@@ -34,7 +34,8 @@ const specs = swaggerJsDoc(options);
 
 async function loadSwaggerDocs() {
   try {
-    // Read the swagger.json file using fs
+    // This part might be unnecessary if you're using swagger-jsdoc
+    // and no longer need the swagger.json file
     const swaggerPath = path.join(__dirname, 'swagger.json');
     const swaggerFile = fs.readFileSync(swaggerPath, 'utf8');
     const swaggerDocument = JSON.parse(swaggerFile);

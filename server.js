@@ -1,50 +1,88 @@
 const express = require("express");
-const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
-require("dotenv").config();
+const swaggerUi = require("swagger-ui-express");
+const path = require("path");
+const fs = require('fs');
 
-const todoRoutes = require("./routes/todos");
-const authRoutes = require("./routes/auth");
-const db = require("./config/db"); // Import the database connection
-const swaggerDocs = require("./config/swagger"); // Import Swagger config
-
-// Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 
-// Middleware
-app.use(express.json());
-app.use(morgan("dev"));
-app.use(cookieParser()); // Add cookie-parser middleware
+// ADDED-----------------------------
+const swaggerJsDoc = require("swagger-jsdoc");
+const CSS_URL =
+  "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.3.0/swagger-ui.min.css";
 
-// Routes
-app.use("/api/todos", todoRoutes);
-app.use("/api/auth", authRoutes);
-
-// Root route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to the Todo API" });
-});
-
-// Initialize Swagger
-swaggerDocs(app);
-
-// Start server only if database connection is successful
-const startServer = () => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
-  });
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "ACS Backend API Assignment",
+      version: "1.0.0",
+      description: "With user authentication",
+    },
+    servers: [
+      {
+        url: "YOUR URL",
+        description: "My API Documentation",
+      },
+    ],
+  },
+  apis: ["./routes/auth.js", "./api/routes/todos.js"], // Fixed path to start with ./
 };
+const specs = swaggerJsDoc(options);
+//----------------------------------------------------------------------
 
-// Check database connection before starting server
-db.query('SELECT 1')
-  .then(() => {
-    console.log('Database connection verified');
-    startServer();
-  })
-  .catch(err => {
-    console.error('Server not started due to database connection issue:', err);
-  });
+
+async function loadSwaggerDocs() {
+  try {
+    // Read the swagger.json file using fs
+    const swaggerPath = path.join(__dirname, 'swagger.json');
+    const swaggerFile = fs.readFileSync(swaggerPath, 'utf8');
+    const swaggerDocument = JSON.parse(swaggerFile);
+
+    // Add CORS headers
+    app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      next();
+    });
+
+    // ADDED----------------------------------------
+    app.use(
+      "/",
+      swaggerUi.serve, // Fixed variable name from swaggerUI to swaggerUi
+      swaggerUi.setup(specs, { // Fixed variable name
+        customCss: '.swagger-ui .opblock .opblock-summary-path-description-wrapper { align-items: center; display: flex; flex-wrap: wrap; gap: 0 10px; padding: 0 10px; width: 100%; }',
+        customCssUrl: CSS_URL
+      })
+    );
+    
+    // This route conflicts with the Swagger UI route above and will never be reached
+    // app.get('/', (req, res) => {
+    //   res.send('Hello world');
+    // })
+    //----------------------------------------------------
+
+    // Add a health check endpoint
+    app.get('/health', (req, res) => {
+      res.status(200).json({ status: 'ok' });
+    });
+
+    // Only listen when not in Vercel environment
+    if (process.env.VERCEL !== "1") {
+      app.listen(PORT, () => console.log(`Swagger docs running at http://localhost:${PORT}`)); // Fixed template string syntax
+    }
+  } catch (error) {
+    console.error("Error setting up Swagger UI:", error);
+    // Add error handling middleware
+    app.use((req, res) => {
+      res.status(500).json({
+        error: 'Failed to load Swagger documentation',
+        details: error.message
+      });
+    });
+  }
+}
+
+loadSwaggerDocs();
 
 module.exports = app;
